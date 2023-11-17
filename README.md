@@ -5,6 +5,54 @@ pip install pandas pyarrow
 
 
 
+
+import scrapy
+from bs4 import BeautifulSoup
+import hashlib
+import os
+
+class HuggingFaceDocsSpider(scrapy.Spider):
+    name = 'huggingface_docs'
+    allowed_domains = ['huggingface.co']
+    start_urls = [
+        'https://huggingface.co/docs/peft',
+        'https://huggingface.co/docs/trl',
+        'https://huggingface.co/docs/evaluate',
+        'https://huggingface.co/docs/optimum',
+        'https://huggingface.co/docs/accelerate',
+        'https://huggingface.co/docs/transformers',
+        'https://huggingface.co/docs/tokenizers',
+        'https://huggingface.co/docs/text-generation-inference',
+        'https://huggingface.co/docs/text-embeddings-inference'
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(HuggingFaceDocsSpider, self).__init__(*args, **kwargs)
+        # Create the output directory if it doesn't exist
+        os.makedirs('output', exist_ok=True)
+
+    def parse(self, response):
+        soup = BeautifulSoup(response.body, 'html.parser')
+
+        # Find specific <div> elements and extract text
+        target_divs = soup.find_all('div', class_='z-1 min-w-0 flex-1')
+        text_content = ' '.join(div.get_text(separator=' ', strip=True) for div in target_divs)
+
+        # Save the text content to a file in the output folder
+        file_name = 'output/' + hashlib.md5(response.url.encode()).hexdigest() + '.txt'
+        with open(file_name, 'w', encoding='utf-8') as file:
+            file.write(text_content)
+
+        # Follow links to next pages within the /docs subdirectory
+        for link in soup.find_all('a', href=True):
+            next_page = response.urljoin(link['href'])
+            if 'https://huggingface.co/docs' in next_page:
+                yield scrapy.Request(next_page, callback=self.parse)
+
+
+
+
+
 import os
 import argparse
 import pandas as pd
