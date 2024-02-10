@@ -9,12 +9,7 @@ class HuggingFaceSpider(scrapy.Spider):
     start_urls = [
         'https://huggingface.co/docs/api-inference',
         'https://huggingface.co/docs/inference-endpoints',
-        'https://huggingface.co/docs/peft',
-        'https://huggingface.co/docs/accelerate',
-        'https://huggingface.co/docs/optimum',
         'https://huggingface.co/docs/optimum-neuron',  # Listed twice in your request, included once
-        'https://huggingface.co/docs/evaluate',
-        'https://huggingface.co/docs/trl',
         'https://huggingface.co/docs/sagemaker',
     ]
 
